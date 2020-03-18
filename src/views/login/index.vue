@@ -14,15 +14,15 @@
         </h3>
       </div>
 
-      <el-form-item prop="username">
+      <el-form-item prop="accountNumber">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
         <el-input
-          ref="username"
-          v-model="loginForm.username"
+          ref="accountNumber"
+          v-model="loginForm.accountNumber"
           placeholder="Username"
-          name="username"
+          name="accountNumber"
           type="text"
           tabindex="1"
           auto-complete="on"
@@ -68,13 +68,11 @@
 </template>
 
 <script>
-import { validUsername } from "@/utils/validate";
-
 export default {
   name: "Login",
   data() {
     const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
+      if (!value) {
         callback(new Error("Please enter the correct user name"));
       } else {
         callback();
@@ -89,11 +87,11 @@ export default {
     };
     return {
       loginForm: {
-        username: "editor",
+        accountNumber: "admin",
         password: "111111"
       },
       loginRules: {
-        username: [
+        accountNumber: [
           { required: true, trigger: "blur", validator: validateUsername }
         ],
         password: [
