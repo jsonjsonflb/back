@@ -64,7 +64,19 @@ export const constantRoutes = [
         path: "index",
         name: "banner",
         component: () => import("@/views/banner/index"),
-        meta: { title: "设置banner", icon: "form" }
+        meta: { title: "设置banner", icon: "link" }
+      }
+    ]
+  },
+  {
+    path: "/analyst",
+    component: Layout,
+    children: [
+      {
+        path: "index",
+        name: "analyst",
+        component: () => import("@/views/analyst/index"),
+        meta: { title: "分析师管理", icon: "user" }
       }
     ]
   },

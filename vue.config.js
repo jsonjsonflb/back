@@ -31,13 +31,12 @@ module.exports = {
   productionSourceMap: false,
   devServer: {
     port: port,
-    open: true,
     overlay: {
       warnings: false,
       errors: true
     },
     proxy: {
-      "/promote": { target: "http://http://103.108.195.112:8000" }
+      "/promote": { target: "http://103.108.195.112:8000" }
     }
     // before: require("./mock/mock-server.js")
   },

@@ -35,7 +35,8 @@ const actions = {
     return new Promise((resolve, reject) => {
       login({ accountNumber: accountNumber.trim(), password: password })
         .then(response => {
-          const { data } = response;
+          const { data = {} } = response;
+          data.token = data.token ? data.token : "make_by_myself";
           commit("SET_TOKEN", data.token);
           setToken(data.token);
           resolve();
