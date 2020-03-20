@@ -1,18 +1,20 @@
 import {
   getAnalystList,
   getAnalystPage,
-  addAnalyst,
-  delAnalyst,
-  updateAnalyst
+  getAnalysisContentPage
 } from "@/api/analyst";
 
 const state = {
-  analystList: []
+  analystList: {},
+  AnalysisContentInfo: {}
 };
 
 const mutations = {
   ANALYST_LIST: (state, lsit) => {
     state.analystList = lsit;
+  },
+  ANALYSISCONTENT_LIST: (state, lsit) => {
+    state.AnalysisContentInfo = lsit;
   }
 };
 
@@ -42,32 +44,12 @@ const actions = {
         });
     });
   },
-  addAnalyst({ commit }, param) {
+  getAnalysisContentPage({ commit }, param) {
     return new Promise((resolve, reject) => {
-      addAnalyst(param)
-        .then(() => {
-          resolve();
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
-  delAnalyst({ commit }, param) {
-    return new Promise((resolve, reject) => {
-      delAnalyst(param)
-        .then(() => {
-          resolve();
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
-  updateAnalyst({ commit }, param) {
-    return new Promise((resolve, reject) => {
-      updateAnalyst(param)
-        .then(() => {
+      getAnalysisContentPage(param)
+        .then(data => {
+          const list = data.data ? data.data : {};
+          commit("ANALYSISCONTENT_LIST", list);
           resolve();
         })
         .catch(error => {

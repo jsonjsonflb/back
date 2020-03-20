@@ -71,12 +71,42 @@ export const constantRoutes = [
   {
     path: "/analyst",
     component: Layout,
+    name: "Analyst",
+    redirect: "/analyst/index",
+    meta: { title: "分析管理", icon: "example" },
     children: [
       {
         path: "index",
-        name: "analyst",
+        name: "analyst/index",
         component: () => import("@/views/analyst/index"),
         meta: { title: "分析师管理", icon: "user" }
+      },
+      {
+        path: "analystContent",
+        name: "analyst/analystContent",
+        component: () => import("@/views/analyst/analystContent"),
+        meta: { title: "分析内容管理", icon: "form" }
+      }
+    ]
+  },
+  {
+    path: "/schedule",
+    component: Layout,
+    name: "Schedule",
+    redirect: "/schedule/type",
+    meta: { title: "赛程管理", icon: "example" },
+    children: [
+      {
+        path: "type",
+        name: "scheduleType",
+        component: () => import("@/views/schedule/scheduleType"),
+        meta: { title: "比赛类型", icon: "example" }
+      },
+      {
+        path: "index",
+        name: "scheduleIndex",
+        component: () => import("@/views/schedule/index"),
+        meta: { title: "比赛日程", icon: "example" }
       }
     ]
   },
@@ -93,7 +123,7 @@ export const constantRoutes = [
   // meta: { title: "Example", icon: "example" }
   // children: [
   //   {
-  //     path: 'table',ssss
+  //     path: 'table',
   //     name: 'Table',
   //     component: () => import('@/views/table/index'),
   //     meta: { title: 'Table', icon: 'table' }

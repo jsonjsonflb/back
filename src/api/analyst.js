@@ -37,3 +37,40 @@ export function updateAnalyst(data = {}) {
     data
   });
 }
+
+// 分析内容
+export function addAnalysisContent(data = {}) {
+  return request({
+    url: "/promote/backstage/analysisContent/addAnalysisContent",
+    method: "post",
+    data
+  });
+}
+export function delAnalysisContent(data = {}) {
+  return request({
+    url: "/promote/backstage/analysisContent/delAnalysisContent",
+    method: "post",
+    data
+  });
+}
+export function getAllAnalysisContent(data = {}) {
+  return request({
+    url: "/promote/backstage/analysisContent/getAllAnalysisContent",
+    method: "post",
+    data
+  });
+}
+export function getAnalysisContentPage(data = {}) {
+  return request({
+    url: "/promote/backstage/analysisContent/getAnalysisContentPage",
+    method: "post",
+    data
+  });
+}
+export function updateAnalysisContent(data = {}) {
+  return request({
+    url: "/promote/backstage/analysisContent/updateAnalysisContent",
+    method: "post",
+    data
+  });
+}

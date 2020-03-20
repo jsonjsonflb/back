@@ -1,6 +1,6 @@
 <template>
-  <div class="analyst_wrap">
-    <h1 class="main_title">分析师管理</h1>
+  <div class="schedule_wrap">
+    <h1 class="main_title">比赛日程</h1>
     <div class="list_wrap">
       <el-card>
         <el-button
@@ -19,47 +19,34 @@
           批量删除
         </el-button>
         <el-table
-          :data="analystList"
+          :data="scheduleList"
           border
           style="width: 100%"
           @selection-change="handleSelectionChange"
         >
-          <el-table-column type="selection" width="55"> </el-table-column>
+          <el-table-column type="selection" width="40"> </el-table-column>
           <el-table-column label="编号" width="50" prop="id" />
-          <el-table-column label="姓名" width="120" prop="analystName" />
-          <el-table-column label="头像" width="120">
+          <el-table-column label="时间" width="170" prop="gameTime" />
+
+          <el-table-column label="标识图" width="80">
             <template slot-scope="scope">
-              <el-popover trigger="hover" placement="top">
-                <img class="table_img" :src="scope.row.avatarUrl" alt="" />
-                <div slot="reference" class="name-wrapper">
-                  <img class="table_img" :src="scope.row.avatarUrl" alt="" />
-                </div>
-              </el-popover>
+              <img class="table_img" :src="scope.row.markImageUrl" alt="" />
             </template>
           </el-table-column>
-          <el-table-column label="二维码" width="120" prop="qrUrl">
+
+          <el-table-column label="比赛名称" width="150" prop="gameName" />
+          <el-table-column label="队伍1图标" width="100">
             <template slot-scope="scope">
-              <el-popover trigger="hover" placement="top">
-                <img class="table_img" :src="scope.row.qrUrl" alt="" />
-                <div slot="reference" class="name-wrapper">
-                  <img class="table_img" :src="scope.row.qrUrl" alt="" />
-                </div>
-              </el-popover>
+              <img class="table_img" :src="scope.row.teamOneUrl" alt="" />
             </template>
           </el-table-column>
-          <el-table-column
-            label="近5场战绩"
-            width="100"
-            prop="recentFiveTimes"
-          />
-          <el-table-column label="命中率" width="120" prop="hitRate" />
-          <el-table-column label="VIP推手" width="120" prop="vipGradeAnalyst">
+          <el-table-column label="队伍1" width="150" prop="teamOne" />
+          <el-table-column label="队伍2图标" width="100">
             <template slot-scope="scope">
-              <span>{{
-                Number(scope.row.vipGradeAnalyst) === 1 ? "是" : "否"
-              }}</span>
+              <img class="table_img" :src="scope.row.teamTwoUrl" alt="" />
             </template>
           </el-table-column>
+          <el-table-column label="队伍2" width="150" prop="teamTwo" />
 
           <el-table-column label="操作">
             <template slot-scope="scope">
@@ -80,36 +67,23 @@
             background
             @current-change="pagenatiOnchange"
             layout="prev, pager, next"
-            :page-size="analystListInfo.size"
-            :current-page="analystListInfo.current"
-            :total="analystListInfo.total"
+            :page-size="scheduleInfo.size"
+            :current-page="scheduleInfo.current"
+            :total="scheduleInfo.total"
           >
           </el-pagination>
         </div>
       </el-card>
     </div>
     <el-dialog
-      title="添加分析师"
+      title="添加比赛日程"
       :visible.sync="dialogVisible"
       width="600px"
       :before-close="handleClose"
     >
       <div class="dialog_wrap">
         <div class="upload_wrap">
-          <p class="label_wrap">头像</p>
-          <el-upload
-            class="avatar-uploader"
-            action="/promote/tools/uploadImage"
-            :show-file-list="false"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload"
-          >
-            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-          </el-upload>
-        </div>
-        <div class="upload_wrap">
-          <p class="label_wrap">二维码</p>
+          <p class="label_wrap">标识图：</p>
           <el-upload
             class="avatar-uploader"
             action="/promote/tools/uploadImage"
@@ -117,31 +91,70 @@
             :on-success="handleQrSuccess"
             :before-upload="beforeQrUpload"
           >
-            <img v-if="qrUrl" :src="qrUrl" class="avatar" />
+            <img
+              v-if="form.markImageUrl"
+              :src="form.markImageUrl"
+              class="avatar"
+            />
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
         </div>
 
         <el-form ref="form" :model="form" label-width="100px">
-          <el-form-item label="姓名" :style="{ width: '300px' }">
-            <el-input v-model="form.analystName"></el-input>
+          <el-form-item label="比赛时间：" :style="{ width: '300px' }">
+            <el-date-picker
+              v-model="form.gameTime"
+              type="datetime"
+              placeholder="选择比赛时间"
+              value-format="yyyy-MM-dd hh:mm:ss"
+            >
+            </el-date-picker>
           </el-form-item>
-          <el-form-item label="近五场战绩" :style="{ width: '300px' }">
-            <el-input v-model="form.recentFiveTimes"></el-input>
+          <el-form-item label="比赛名称：" :style="{ width: '300px' }">
+            <el-input v-model="form.gameName"></el-input>
           </el-form-item>
-          <el-form-item label="命中率" :style="{ width: '300px' }">
-            <el-input type="number" v-model="form.hitRate">
-              <i slot="suffix">%</i>
-            </el-input>
+          <el-form-item label="队伍1" :style="{ width: '300px' }">
+            <el-input v-model="form.teamOne"></el-input>
+          </el-form-item>
+          <!-- 队伍1图标 -->
+          <el-form-item label="队伍1图标：">
+            <el-upload
+              class="avatar-uploader"
+              action="/promote/tools/uploadImage"
+              :show-file-list="false"
+              :on-success="handleT1Success"
+              :before-upload="beforeQrUpload"
+            >
+              <img
+                v-if="form.teamOneUrl"
+                :src="form.teamOneUrl"
+                class="avatar"
+              />
+              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </el-upload>
           </el-form-item>
 
-          <el-form-item label="是否VIP推手">
-            <el-radio-group v-model="form.vipGradeAnalyst">
-              <el-radio label="1">是</el-radio>
-              <el-radio label="0">否</el-radio>
-            </el-radio-group>
+          <!-- 队伍2图标 -->
+          <el-form-item label="队伍2：" :style="{ width: '300px' }">
+            <el-input v-model="form.teamTwo"></el-input>
           </el-form-item>
-
+          <el-form-item label="队伍2图标：">
+            <el-upload
+              class="avatar-uploader"
+              action="/promote/tools/uploadImage"
+              :show-file-list="false"
+              :on-success="handleT2Success"
+              :before-upload="beforeQrUpload"
+            >
+              <img
+                v-if="form.teamTwoUrl"
+                :src="form.teamTwoUrl"
+                class="avatar"
+              />
+              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </el-upload>
+          </el-form-item>
+          <!-- 底部 -->
           <el-form-item>
             <el-button v-if="!isEdit" type="primary" @click="onSubmit"
               >立即添加</el-button
@@ -160,29 +173,30 @@
 <script>
 import _ from "lodash";
 import { mapActions, mapState } from "vuex";
-import { addAnalyst, delAnalyst, updateAnalyst } from "@/api/analyst";
+import {
+  addGameSchedule,
+  delGameSchedule,
+  updateGameSchedule
+} from "@/api/schedule";
 
 export default {
   name: "analyst",
 
   data() {
     return {
-      pageNum: 1,
+      pageNum: 1, // 初始页码
       pageSize: 10,
       dialogVisible: false,
       multipleSelection: [],
-      // 头像
-      imageUrl: "",
-      // 二维码
-      qrUrl: "",
 
       form: {
-        analystName: "",
-        avatarUrl: "",
-        hitRate: "",
-        qrUrl: "",
-        recentFiveTimes: "",
-        vipGradeAnalyst: ""
+        gameName: "",
+        gameTime: "",
+        markImageUrl: "",
+        teamOne: "",
+        teamOneUrl: "",
+        teamTwo: "",
+        teamTwoUrl: ""
       },
 
       // 是否再编辑状态
@@ -199,18 +213,18 @@ export default {
   },
   computed: {
     ...mapState({
-      analystListInfo: state => {
+      scheduleInfo: state => {
         const {
-          analystList = {
+          scheduleInfo = {
             current: this.pageNum,
             size: this.pageSize,
             total: 0
           }
-        } = state.analyst;
-        return analystList;
+        } = state.schedule;
+        return scheduleInfo;
       },
-      analystList: state => {
-        const { records = [] } = state.analyst.analystList;
+      scheduleList: state => {
+        const { records = [] } = state.schedule.scheduleInfo;
         return records;
       }
     })
@@ -218,35 +232,30 @@ export default {
 
   methods: {
     ...mapActions({
-      getAnalystList: "analyst/getAnalystPage"
+      getGameSchedulePage: "schedule/getGameSchedulePage"
     }),
     resetAllStatus() {
       this.form = {
-        analystName: "",
-        avatarUrl: "",
-        hitRate: "",
-        qrUrl: "",
-        recentFiveTimes: "",
-        vipGradeAnalyst: ""
+        gameName: "",
+        gameTime: "",
+        markImageUrl: "",
+        teamOne: "",
+        teamOneUrl: "",
+        teamTwo: "",
+        teamTwoUrl: ""
       };
-      this.imageUrl = "";
-      this.qrUrl = "";
       this.isEdit = false;
     },
-    getAnalystListDtail() {
+    getScheduleListDtail() {
       const { pageNum, pageSize } = this;
-      this.getAnalystList({
+      this.getGameSchedulePage({
         pageNum,
         pageSize
       });
     },
     handleEdit(row) {
       const data = _.cloneDeep(row);
-      // v-model="form.vipGradeAnalyst" 识别字符串
-      data.vipGradeAnalyst = data.vipGradeAnalyst.toString();
       this.form = data;
-      this.imageUrl = row.avatarUrl;
-      this.qrUrl = row.qrUrl;
       this.dialogVisible = true;
       this.isEdit = true;
     },
@@ -277,9 +286,9 @@ export default {
         cancelButtonText: "取消"
       })
         .then(() => {
-          delAnalyst(list)
+          delGameSchedule(list)
             .then(() => {
-              this.getAnalystListDtail();
+              this.getScheduleListDtail();
 
               // 重置状态
               if (isMultiple) {
@@ -305,65 +314,73 @@ export default {
       const { isEdit = false } = this;
       // 提交
       const {
-        analystName,
-        avatarUrl,
-        hitRate,
-        qrUrl,
-        recentFiveTimes,
-        vipGradeAnalyst
+        gameName,
+        gameTime,
+        markImageUrl,
+        teamOne,
+        teamOneUrl,
+        teamTwoUrl,
+        teamTwo
       } = this.form;
 
-      if (!avatarUrl) {
+      if (!gameName) {
         this.$message({
-          message: "请上传头像",
+          message: "填写比赛名称",
           type: "error"
         });
         return;
       }
-      if (!qrUrl) {
+      if (!markImageUrl) {
         this.$message({
-          message: "请上传二维码图片",
+          message: "请上传标识图",
           type: "error"
         });
         return;
       }
-      if (!analystName) {
+      if (!teamOneUrl) {
         this.$message({
-          message: "请填写姓名",
+          message: "请上传队伍一标识图",
           type: "error"
         });
         return;
       }
-      if (!recentFiveTimes) {
+      if (!teamTwoUrl) {
         this.$message({
-          message: "请填写近五场战绩",
+          message: "请上传队伍二标识图",
           type: "error"
         });
         return;
       }
-      if (!hitRate) {
+      if (!gameTime) {
         this.$message({
-          message: "命中率没填",
+          message: "请填写比赛时间",
           type: "error"
         });
         return;
       }
-      if (!vipGradeAnalyst) {
+      if (!teamOne) {
         this.$message({
-          message: "是否VIP推手没有选",
+          message: "队伍1没填",
+          type: "error"
+        });
+        return;
+      }
+      if (!teamTwo) {
+        this.$message({
+          message: "队伍2没填",
           type: "error"
         });
         return;
       }
 
       if (isEdit) {
-        updateAnalyst(this.form)
+        updateGameSchedule(this.form)
           .then(() => {
             this.$message({
               message: "修改成功",
               type: "success"
             });
-            this.getAnalystListDtail();
+            this.getScheduleListDtail();
             // 重置状态
             this.dialogVisible = false;
             this.resetAllStatus();
@@ -375,13 +392,13 @@ export default {
             });
           });
       } else {
-        addAnalyst(this.form)
+        addGameSchedule(this.form)
           .then(() => {
             this.$message({
               message: "添加成功",
               type: "success"
             });
-            this.getAnalystListDtail();
+            this.getScheduleListDtail();
             // 重置状态
             this.dialogVisible = false;
             this.resetAllStatus();
@@ -392,47 +409,45 @@ export default {
       }
     },
 
-    // 上传头像
-    handleAvatarSuccess(res, file) {
-      this.imageUrl = URL.createObjectURL(file.raw);
-      this.form.avatarUrl = res.msg ? res.msg : "";
-      this.$message({ type: "success", message: "上传成功" });
-    },
-    beforeAvatarUpload(file) {
-      const isLt2M = file.size / 1024 / 1024 < 2;
-      if (!isLt2M) {
-        this.$message.error("上传头像图片大小不能超过 2MB!");
-      }
-      return isLt2M;
-    },
-
-    // 上传二维码
+    // 上传标识图
     handleQrSuccess(res, file) {
-      this.qrUrl = URL.createObjectURL(file.raw);
-      this.form.qrUrl = res.msg ? res.msg : "";
+      this.form.markImageUrl = res.msg ? res.msg : "";
       this.$message({ type: "success", message: "二维码上传成功" });
     },
     beforeQrUpload(file) {
-      const isLt2M = file.size / 1024 / 1024 < 2;
-      if (!isLt2M) {
-        this.$message.error("二维码图片大小不能超过 2MB!");
+      const isLt1M = file.size / 1024 / 1024 < 1;
+      if (!isLt1M) {
+        this.$message.error("二维码图片大小不能超过 1MB!");
       }
-      return isLt2M;
+      return isLt1M;
     },
+
+    // 上传队伍一图标
+    handleT1Success(res, file) {
+      this.form.teamOneUrl = res.msg ? res.msg : "";
+      this.$message({ type: "success", message: "二维码上传成功" });
+    },
+
+    // 上传队伍二图标
+    handleT2Success(res, file) {
+      this.form.teamTwoUrl = res.msg ? res.msg : "";
+      this.$message({ type: "success", message: "二维码上传成功" });
+    },
+
     // 分页
     pagenatiOnchange(index) {
       this.pageNum = index;
-      this.getAnalystListDtail();
+      this.getScheduleListDtail();
     }
   },
   mounted() {
-    this.getAnalystListDtail();
+    this.getScheduleListDtail();
   }
 };
 </script>
 
 <style lang="scss">
-.analyst_wrap {
+.schedule_wrap {
   .main_title {
     text-align: center;
   }
@@ -449,8 +464,8 @@ export default {
 
   // 列表图片尺寸
   .table_img {
-    width: 100px;
-    height: 100px;
+    width: 50px;
+    height: 50px;
   }
 
   // 对话框
@@ -481,14 +496,14 @@ export default {
   .avatar-uploader-icon {
     font-size: 28px;
     color: #8c939d;
-    width: 100px;
-    height: 100px;
-    line-height: 100px;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
     text-align: center;
   }
   .avatar {
-    width: 100px;
-    height: 100px;
+    width: 50px;
+    height: 50px;
     display: block;
   }
 }

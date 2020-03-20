@@ -82,6 +82,7 @@ import _ from "lodash";
 import { mapActions, mapGetters } from "vuex";
 
 export default {
+  name: "Banner",
   data() {
     return {
       fileList: [],
