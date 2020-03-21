@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from "@/api/user";
+import { login, logout, getInfo, getUserInfoList } from "@/api/user";
 import { getToken, setToken, removeToken } from "@/utils/auth";
 import { resetRouter } from "@/router";
 
@@ -6,7 +6,8 @@ const getDefaultState = () => {
   return {
     token: getToken(),
     name: "",
-    avatar: ""
+    avatar: "",
+    userList: {}
   };
 };
 
@@ -24,6 +25,9 @@ const mutations = {
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar;
+  },
+  GET_USER_LIST: (state, list) => {
+    state.userList = list;
   }
 };
 
@@ -92,6 +96,21 @@ const actions = {
       removeToken(); // must remove  token  first
       commit("RESET_STATE");
       resolve();
+    });
+  },
+
+  // 用户信息
+  getUserInfoList({ commit }, param) {
+    return new Promise((resolve, reject) => {
+      getUserInfoList(param)
+        .then(data => {
+          const list = data.data ? data.data : {};
+          commit("GET_USER_LIST", list);
+          resolve();
+        })
+        .catch(error => {
+          reject(error);
+        });
     });
   }
 };
