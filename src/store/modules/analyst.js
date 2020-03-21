@@ -6,15 +6,15 @@ import {
 
 const state = {
   analystList: {},
-  AnalysisContentInfo: {}
+  analysisContentInfo: {}
 };
 
 const mutations = {
-  ANALYST_LIST: (state, lsit) => {
-    state.analystList = lsit;
+  ANALYST_LIST: (state, list) => {
+    state.analystList = list;
   },
-  ANALYSISCONTENT_LIST: (state, lsit) => {
-    state.AnalysisContentInfo = lsit;
+  ANALYSISCONTENT_LIST: (state, list) => {
+    state.analysisContentInfo = list;
   }
 };
 

@@ -46,11 +46,13 @@ export function addAnalysisContent(data = {}) {
     data
   });
 }
-export function delAnalysisContent(data = {}) {
+export function delAnalysisContent(data = []) {
   return request({
     url: "/promote/backstage/analysisContent/delAnalysisContent",
     method: "post",
-    data
+    data: {
+      idList: data
+    }
   });
 }
 export function getAllAnalysisContent(data = {}) {

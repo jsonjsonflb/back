@@ -1,15 +1,10 @@
 <template>
-  <div class="schedule_wrap">
-    <h1 class="main_title">分析内容管理</h1>
+  <div class="analystContent_wrap">
     <div class="list_wrap">
       <el-card>
-        <el-button
-          @click="showAdd(true)"
-          :style="{ marginBottom: '15px' }"
-          type="primary"
-        >
-          添加
-        </el-button>
+        <div slot="header" class="clearfix">
+          <span><b>分析内容管理</b></span>
+        </div>
         <el-button
           v-if="multipleSelection.length"
           @click="handleDeleteMultiple"
@@ -19,25 +14,25 @@
           批量删除
         </el-button>
         <el-table
-          :data="scheduleTypeList"
+          :data="analysisContent"
           border
           style="width: 100%"
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="40"> </el-table-column>
           <el-table-column label="编号" width="50" prop="id" />
-
-          <el-table-column label="联赛名称" width="200" prop="leagueName" />
-          <el-table-column label="联赛图标" width="150">
-            <template slot-scope="scope">
-              <img class="table_img" :src="scope.row.imageUrl" alt="" />
-            </template>
-          </el-table-column>
-
+          <el-table-column label="标题" width="200" prop="title" />
+          <el-table-column label="分析内容" prop="analysisContent" />
           <el-table-column label="操作">
             <template slot-scope="scope">
               <el-button size="mini" @click="handleEdit(scope.row)"
                 >编辑</el-button
+              >
+              <el-button
+                @click="handlePreview(scope.row)"
+                size="mini"
+                type="primary"
+                >预览</el-button
               >
               <el-button
                 size="mini"
@@ -53,102 +48,110 @@
             background
             @current-change="pagenatiOnchange"
             layout="prev, pager, next"
-            :page-size="scheduleTypeInfo.size"
-            :current-page="scheduleTypeInfo.current"
-            :total="scheduleTypeInfo.total"
+            :page-size="analysisContentInfo.size"
+            :current-page="analysisContentInfo.current"
+            :total="analysisContentInfo.total"
           >
           </el-pagination>
         </div>
       </el-card>
     </div>
-    <el-dialog
-      title="添加比赛类型"
-      :visible.sync="dialogVisible"
-      width="600px"
-      :before-close="handleClose"
-    >
-      <div class="dialog_wrap">
-        <div class="upload_wrap">
-          <p class="label_wrap">标识图：</p>
-          <el-upload
-            class="avatar-uploader"
-            action="/promote/tools/uploadImage"
-            :show-file-list="false"
-            :on-success="handleQrSuccess"
-            :before-upload="beforeQrUpload"
-          >
-            <img v-if="form.imageUrl" :src="form.imageUrl" class="avatar" />
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-          </el-upload>
-        </div>
 
+    <div class="list_wrap">
+      <el-card>
+        <div slot="header" class="clearfix">
+          <span
+            ><b>{{ isEdit ? "修改分析内容" : "新增分析内容" }}</b>
+          </span>
+        </div>
         <el-form ref="form" :model="form" label-width="100px">
-          <el-form-item label="联赛名称" :style="{ width: '300px' }">
-            <el-input v-model="form.leagueName"></el-input>
+          <!-- title -->
+          <el-form-item label="分析标题" :style="{ width: '300px' }">
+            <el-input v-model="form.title"></el-input>
+          </el-form-item>
+          <!-- content -->
+          <el-form-item label="分析标题">
+            <MainEditor
+              v-model="form.analysisContent"
+              url="/promote/tools/uploadImage"
+              @input="editorInput"
+              @on-upload-complete="onEditorUploadComplete"
+            ></MainEditor>
           </el-form-item>
 
           <!-- 底部 -->
           <el-form-item>
-            <el-button v-if="!isEdit" type="primary" @click="onSubmit"
-              >立即添加</el-button
-            >
-            <el-button v-else type="primary" @click="onSubmit"
-              >立即修改</el-button
-            >
-            <el-button @click="showAdd(false)">取消</el-button>
+            <div v-if="!isEdit">
+              <el-button type="primary" @click="onSubmit">立即添加</el-button>
+              <el-button @click="resetAllStatus">重置</el-button>
+            </div>
+            <div v-else>
+              <el-button type="primary" @click="onSubmit">立即修改</el-button>
+              <el-button @click="resetAllStatus">取消</el-button>
+            </div>
           </el-form-item>
         </el-form>
-      </div>
-    </el-dialog>
+      </el-card>
+    </div>
+
+    <div>
+      <el-dialog
+        :title="previewData.title"
+        :visible.sync="dialogVisible"
+        width="90%"
+        :before-close="handleClose"
+      >
+        <div v-html="previewData.analysisContent"></div>
+      </el-dialog>
+    </div>
   </div>
 </template>
 
 <script>
 import _ from "lodash";
 import { mapActions, mapState } from "vuex";
-import { addLeagueType, delLeagueType, updateLeagueType } from "@/api/schedule";
+import {
+  addAnalysisContent,
+  delAnalysisContent,
+  updateAnalysisContent
+} from "@/api/analyst";
+import MainEditor from "./richText";
 
 export default {
   name: "analyst",
-
+  components: {
+    MainEditor
+  },
   data() {
     return {
       pageNum: 1, // 初始页码
       pageSize: 10,
       dialogVisible: false,
       multipleSelection: [],
-
       form: {
-        leagueName: "",
-        imageUrl: ""
+        analysisContent: "",
+        title: ""
       },
-
       // 是否再编辑状态
-      isEdit: false
+      isEdit: false,
+      previewData: {}
     };
-  },
-  watch: {
-    dialogVisible(val) {
-      if (!val) {
-        // 关闭弹窗，重置数据
-        this.resetAllStatus();
-      }
-    }
   },
   computed: {
     ...mapState({
-      scheduleTypeInfo: state => {
+      analysisContentInfo: state => {
         const {
-          scheduleTypeInfo = {
+          analysisContentInfo = {
             current: this.pageNum,
             size: this.pageSize,
             total: 0
           }
-        } = state.schedule;
-        return scheduleTypeInfo;
+        } = state.analyst;
+
+        return analysisContentInfo;
       },
-      scheduleTypeList: state => {
-        const { records = [] } = state.schedule.scheduleTypeInfo;
+      analysisContent: state => {
+        const { records = [] } = state.analyst.analysisContentInfo;
         return records;
       }
     })
@@ -160,10 +163,11 @@ export default {
     }),
     resetAllStatus() {
       this.form = {
-        gameName: "",
-        imageUrl: ""
+        analysisContent: "",
+        title: ""
       };
       this.isEdit = false;
+      window.tinymce.activeEditor.setContent("");
     },
     getScheduleListDtail() {
       const { pageNum, pageSize } = this;
@@ -175,12 +179,15 @@ export default {
     handleEdit(row) {
       const data = _.cloneDeep(row);
       this.form = data;
-      this.dialogVisible = true;
       this.isEdit = true;
+      window.scrollTo(0, document.documentElement.clientHeight);
+      window.tinymce.activeEditor.setContent(this.form.analysisContent);
     },
 
-    showAdd(bool) {
-      this.dialogVisible = bool;
+    // 预览
+    handlePreview(row) {
+      this.previewData = row;
+      this.dialogVisible = true;
     },
 
     handleClose(done) {
@@ -205,7 +212,7 @@ export default {
         cancelButtonText: "取消"
       })
         .then(() => {
-          delLeagueType(list)
+          delAnalysisContent(list)
             .then(() => {
               this.getScheduleListDtail();
 
@@ -232,25 +239,25 @@ export default {
     onSubmit() {
       const { isEdit = false } = this;
       // 提交
-      const { imageUrl, leagueName } = this.form;
+      const { title, analysisContent } = this.form;
 
-      if (!imageUrl) {
+      if (!title) {
         this.$message({
-          message: "请上传联赛图标",
+          message: "标题未填写",
           type: "error"
         });
         return;
       }
-      if (!leagueName) {
+      if (!analysisContent) {
         this.$message({
-          message: "请填写联赛名称",
+          message: "未填写任何内容！",
           type: "error"
         });
         return;
       }
 
       if (isEdit) {
-        updateLeagueType(this.form)
+        updateAnalysisContent(this.form)
           .then(() => {
             this.$message({
               message: "修改成功",
@@ -258,7 +265,6 @@ export default {
             });
             this.getScheduleListDtail();
             // 重置状态
-            this.dialogVisible = false;
             this.resetAllStatus();
           })
           .catch(error => {
@@ -268,7 +274,7 @@ export default {
             });
           });
       } else {
-        addLeagueType(this.form)
+        addAnalysisContent(this.form)
           .then(() => {
             this.$message({
               message: "添加成功",
@@ -276,7 +282,6 @@ export default {
             });
             this.getScheduleListDtail();
             // 重置状态
-            this.dialogVisible = false;
             this.resetAllStatus();
           })
           .catch(error => {
@@ -285,33 +290,37 @@ export default {
       }
     },
 
-    // 上传标识图
-    handleQrSuccess(res, file) {
-      this.form.imageUrl = res.msg ? res.msg : "";
-      this.$message({ type: "success", message: "二维码上传成功" });
-    },
-    beforeQrUpload(file) {
-      const isLt1M = file.size / 1024 / 1024 < 1;
-      if (!isLt1M) {
-        this.$message.error("二维码图片大小不能超过 1MB!");
-      }
-      return isLt1M;
-    },
-
     // 分页
     pagenatiOnchange(index) {
       this.pageNum = index;
       this.getScheduleListDtail();
+    },
+
+    // 回调方法处理
+    onEditorUploadComplete(res) {
+      // console.log(res);
+    },
+    // 富文本内容
+    editorInput(e) {
+      this.form.analysisContent = e;
     }
   },
   mounted() {
     this.getScheduleListDtail();
+
+    // 如果没有定时器 || 定时器时间低于500ms(视电脑硬件配置及代码量)，会出现报错
+    // 因为还没init完成，写着这个里面
+    setTimeout(() => {
+      window.tinymce.activeEditor.setContent(this.form.analysisContent);
+    }, 1000);
   }
 };
 </script>
 
 <style lang="scss">
-.schedule_wrap {
+.analystContent_wrap {
+  padding-bottom: 50px;
+
   .main_title {
     text-align: center;
   }
@@ -319,6 +328,7 @@ export default {
   .list_wrap {
     width: 95%;
     margin: 0 auto;
+    margin-top: 50px;
   }
 
   .pagenation {
@@ -345,30 +355,6 @@ export default {
         text-align: right;
       }
     }
-  }
-  // 上传
-  .avatar-uploader .el-upload {
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  .avatar-uploader .el-upload:hover {
-    border-color: #409eff;
-  }
-  .avatar-uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
-    text-align: center;
-  }
-  .avatar {
-    width: 50px;
-    height: 50px;
-    display: block;
   }
 }
 </style>

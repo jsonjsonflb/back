@@ -160,7 +160,7 @@ export default {
     }),
     resetAllStatus() {
       this.form = {
-        gameName: "",
+        leagueName: "",
         imageUrl: ""
       };
       this.isEdit = false;
